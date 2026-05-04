@@ -192,6 +192,16 @@ class ChatbotAgent {
     });
     await baseAgent.connect(vault);
 
+    // Load directive
+    try {
+      const { loadDirective } = await import('agents-library');
+      const toolNames = baseAgent.client.readAgentJson().tools.map((t: any) => t.name);
+      const directive = await loadDirective(process.cwd(), { tools: toolNames, agentId });
+      if (directive) {
+        logger.info(agentId, `Loaded directive (${directive.length} chars): ${directive.trim().split('\n').find((l: string) => l.trim())?.trim().slice(0, 80)}`, timer.elapsed('main'));
+      }
+    } catch {}
+
     // Ready
     logger.info(agentId, `Ready (${timer.elapsed('main')})`, timer.elapsed('main'));
   }
