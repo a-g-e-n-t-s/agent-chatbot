@@ -2,8 +2,8 @@
   "lockfileVersion": 1,
   "metadata": {
     "kadiVersion": "0.0.7",
-    "generated": "2026-04-25T03:21:19.095Z",
-    "metaHash": "sha256-e41ee1687a531bf2a6b4634f564b686de3da067569aa3ef85daa2d1bd3288950",
+    "generated": "2026-05-04T14:49:23.032Z",
+    "metaHash": "sha256-066f831114f7b83c7bce37dbca6747910373c17ad2b5a54bfd098586ba048d13",
     "source": "agent.json"
   },
   "agent": {
@@ -24,14 +24,14 @@
       "isTopLevel": true,
       "requiredBy": []
     },
-    "ability-log@0.1.2": {
-      "version": "0.1.2",
-      "resolvedVersion": "0.1.2",
-      "requestedVersion": "0.1.2",
+    "ability-log@0.1.5": {
+      "version": "0.1.5",
+      "resolvedVersion": "0.1.5",
+      "requestedVersion": "0.1.5",
       "type": "ability",
-      "resolved": "abilities/ability-log@0.1.2",
+      "resolved": "abilities/ability-log@0.1.5",
       "entrypoint": "dist/src/index.js",
-      "integrity": "sha512-fBesvdLhkqIO1f9/XvCDZeZuKALrDDY/Hi5Kyx1wyOtMo1Yx1HYiK0q57UX9SeRaTinv73SIlGifPsbD6ZNP2g==",
+      "integrity": "sha512-JzaPwOYbNgDkPZFcBrBg9ymzPSuHZ69rZi7fd6ylOABFm1VMQePKk/GA2RdvNv07M+NdpGE16fxMUUa+qohIdg==",
       "source": "http://kadi.build:8000",
       "dependencies": {},
       "isTopLevel": true,

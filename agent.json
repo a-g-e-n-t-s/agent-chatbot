@@ -31,7 +31,7 @@
   },
   "abilities": {
     "secret-ability": "*",
-    "ability-log": "^0.1.2"
+    "ability-log": "^0.1.5"
   },
   "deploy": {
     "akash": {
