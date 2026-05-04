@@ -1,7 +1,7 @@
 {
   "name": "agent-chatbot",
   "type": "agent",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "entrypoint": "dist/index.js",
   "scripts": {
     "preflight": "node -e \"const fs=require('fs');if(!fs.existsSync('node_modules')){console.error('Dependencies not installed. Run: npm install');process.exit(1)}console.log('✓ Dependencies OK')\"",
@@ -45,7 +45,7 @@
       "engine": "podman",
       "services": {
         "app": {
-          "image": "agent-chatbot:0.1.6",
+          "image": "agent-chatbot:0.1.7",
           "command": [
             "sh",
             "-c",
