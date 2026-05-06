@@ -41,6 +41,8 @@ Secrets required (provide via Kadi vault or env):
 - DISCORD_TOKEN
 - SLACK_BOT_TOKEN
 - SLACK_SIGNING_SECRET
+- ARCADE_USERNAME
+- ARCADE_PASSWORD
 
 4. Start the agent via Kādi:
 ```bash
@@ -86,20 +88,32 @@ Platform toggles and non-secret fields (config.toml keys with optional env overr
 - bot.slack.USER_ID — overridden by SLACK_BOT_USER_ID env
 - bot.slack.HTTP_PORT — overridden by SLACK_HTTP_PORT env
 
+ArcadeDB configuration
+- The agent includes optional ArcadeDB configuration in config.toml under [arcadedb]:
+  - HOST — ArcadeDB host (e.g. arcadedb.dadavidtseng.com)
+  - PORT — ArcadeDB port (e.g. 443)
+  - USERNAME — DB username
+  - DATABASE — DB name
+- Deploy/containers may supply ARCADE_HOST and ARCADE_PORT environment variables (see agent.json deploy).
+
 Secrets
 - Secrets are loaded via agents-library.loadVaultCredentials (Kadi secrets vaults / secrets.toml). The deploy configuration in agent.json requires these vaults for production deployments.
 - Required secret names:
   - DISCORD_TOKEN
   - SLACK_BOT_TOKEN
   - SLACK_SIGNING_SECRET
+  - ARCADE_USERNAME
+  - ARCADE_PASSWORD
+- The deploy configuration (agent.json) expects two vaults: "chatbot" (chat/Slack/Discord secrets) and "arcadedb" (ArcadeDB credentials). In production the container entrypoint runs:
+  kadi secret receive --vault chatbot --vault arcadedb && kadi run start
 - You may also provide these via environment variables for local development.
 
 Logging and identity
 - logging.LEVEL in config.toml controls log level (e.g. debug, info). The agent sets its tag from agent.ID in config.toml.
 
 Files of interest:
-- agent.json — agent metadata, scripts, build config, deploy and secrets config
-- config.toml — primary agent configuration (broker, bots, logging, secrets/vaults)
+- agent.json — agent metadata, scripts, build config, deploy and secrets config (includes deploy command that fetches chatbot + arcadedb vaults)
+- config.toml — primary agent configuration (broker, bots, logging, secrets/vaults, arcadedb)
 - src/index.ts — main agent bootstrap and configuration (broker resolution, platform enablement)
 - ./platforms/discord/client.js — Discord platform client implementation
 - ./platforms/discord/listener.js — Discord event listener
@@ -186,12 +200,12 @@ Container / CI build
   - npx tsc
   - npm prune --omit=dev
 - The built image sets NODE_ENV=production.
-- In production/deploy, the container entrypoint uses kadi secret receive to fetch secrets from the broker/vault before starting the agent (see agent.json deploy.command).
+- In production/deploy, the container entrypoint uses kadi secret receive to fetch required vaults (chatbot and arcadedb) before starting the agent (see agent.json deploy.command). The deploy configuration also supplies ARCADE_HOST and ARCADE_PORT environment variables for ArcadeDB access.
 
 Troubleshooting
 ===============
 - "Dependencies not installed. Run: npm install" — run npm install then re-run preflight or the script you were using.
-- Configuration validation errors — check config.toml and ensure required secrets are present in your vault or environment (DISCORD_TOKEN, SLACK_BOT_TOKEN, SLACK_SIGNING_SECRET).
+- Configuration validation errors — check config.toml and ensure required secrets are present in your vault or environment (DISCORD_TOKEN, SLACK_BOT_TOKEN, SLACK_SIGNING_SECRET, ARCADE_USERNAME, ARCADE_PASSWORD).
 - Broker connection issues — verify broker URLs in config.toml or KADI_BROKER_URL_LOCAL / KADI_BROKER_URL_REMOTE env vars, and that the Kādi broker is reachable.
 - Slack not enabled — ensure bot enabled flag in config.toml (bot.slack.ENABLED) or SLACK_ENABLED env is true and that SLACK_BOT_TOKEN is provided (Slack workspace bot tokens typically start with xoxb-).
 
