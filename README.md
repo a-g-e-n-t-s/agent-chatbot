@@ -14,12 +14,19 @@ cd agent-chatbot
 npm install
 ```
 
-2. Install the agent into your KĀDI environment (requires kadi CLI):
+2. (Optional) Compile TypeScript for production / when running the compiled entrypoint:
+```bash
+npm run setup    # runs npx tsc
+# or
+npm run build
+```
+
+3. Install the agent into your KĀDI environment (requires kadi CLI):
 ```bash
 kadi install
 ```
 
-3. Configure the agent. The agent reads configuration from config.toml (see Configuration). Secrets should be provided via Kadi secrets vaults (recommended) or environment variables. Example minimal config.toml (see config.toml in repo for full example):
+4. Configure the agent. The agent reads configuration from config.toml (see Configuration). Secrets should be provided via Kadi secrets vaults (recommended) or environment variables. Example minimal config.toml (see config.toml in repo for full example):
 ```toml
 [broker.remote]
 URL = "wss://broker.dadavidtseng.com/kadi"
@@ -44,14 +51,17 @@ Secrets required (provide via Kadi vault or env):
 - ARCADE_USERNAME
 - ARCADE_PASSWORD
 
-4. Start the agent via Kādi:
+5. Start the agent:
+- In a Kādi-managed environment (recommended / deploy): this runs the configured start script (node dist/index.js)
 ```bash
 kadi run start
 ```
-
-Alternatively, for local development:
+- Locally, after building (or for production-like run):
 ```bash
-# TypeScript watcher (requires tsx)
+npm run start   # runs node dist/index.js (requires dist/index.js to exist)
+```
+- For active local development with TypeScript watcher (requires tsx):
+```bash
 npm run dev
 ```
 
@@ -97,7 +107,10 @@ Secrets
   - SLACK_SIGNING_SECRET
   - ARCADE_USERNAME
   - ARCADE_PASSWORD
-- The deploy configuration (agent.json) expects two vaults: "chatbot" (chat/Slack/Discord secrets) and "arcadedb" (ArcadeDB credentials). In production the container entrypoint runs:
+- Deploy configuration (agent.json) declares two vaults:
+  - "chatbot" (required: DISCORD_TOKEN, SLACK_BOT_TOKEN, SLACK_SIGNING_SECRET)
+  - "arcadedb" (required: ARCADE_USERNAME, ARCADE_PASSWORD)
+- In production the container entrypoint runs:
   kadi secret receive --vault chatbot --vault arcadedb && kadi run start
 - You may also provide these via environment variables for local development.
 
@@ -113,7 +126,7 @@ Logging and identity
 - logging.LEVEL in config.toml controls log level (e.g. debug, info). The agent sets its tag from agent.ID in config.toml.
 
 Files of interest:
-- agent.json — agent metadata, scripts, build config, deploy and secrets config (includes deploy command that fetches chatbot + arcadedb vaults)
+- agent.json — agent metadata, scripts (preflight/setup/start/dev/build), build config, deploy and secrets config (includes deploy command that fetches chatbot + arcadedb vaults). Entrypoint: dist/index.js.
 - config.toml — primary agent configuration (broker, bots, logging, secrets/vaults, arcadedb)
 - src/index.ts — main agent bootstrap and configuration (broker resolution, platform enablement)
 - ./platforms/discord/client.js — Discord platform client implementation
@@ -147,7 +160,7 @@ High-level data flow and key components:
 - Tool Registration
   - registerDiscordTools (./platforms/discord/tools.js)
   - registerSlackTools (./platforms/slack/tools.js)
-  - Register outbound actions with the Kādi broker so other agents can invoke platform actions (send message, update message, fetch channel info, etc).
+  - Register outbound actions with the Kādi broker so remote callers can invoke platform actions (send message, update message, fetch channel info, etc).
 
 Typical runtime flow:
 1. Agent loads configuration from config.toml via agents-library readConfig; environment variables may override specific fields.
@@ -156,3 +169,5 @@ Typical runtime flow:
 4. Enabled platform clients are initialized (Discord and/or Slack).
 5. Platform-specific listeners attach to platform SDKs and publish inbound events to Kādi networks.
 6. Platform-specific tools are registered with the broker so remote callers can invoke outbound actions. Calls go
+
+---
