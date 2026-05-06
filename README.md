@@ -88,16 +88,9 @@ Platform toggles and non-secret fields (config.toml keys with optional env overr
 - bot.slack.USER_ID — overridden by SLACK_BOT_USER_ID env
 - bot.slack.HTTP_PORT — overridden by SLACK_HTTP_PORT env
 
-ArcadeDB configuration
-- The agent includes optional ArcadeDB configuration in config.toml under [arcadedb]:
-  - HOST — ArcadeDB host (e.g. arcadedb.dadavidtseng.com)
-  - PORT — ArcadeDB port (e.g. 443)
-  - USERNAME — DB username
-  - DATABASE — DB name
-- Deploy/containers may supply ARCADE_HOST and ARCADE_PORT environment variables (see agent.json deploy).
-
 Secrets
 - Secrets are loaded via agents-library.loadVaultCredentials (Kadi secrets vaults / secrets.toml). The deploy configuration in agent.json requires these vaults for production deployments.
+- The repository config.toml includes a [secrets] section where VAULTS and KEYS can be declared (see config.toml). This lists expected vault names and secret keys that the agent will attempt to load.
 - Required secret names:
   - DISCORD_TOKEN
   - SLACK_BOT_TOKEN
@@ -107,6 +100,14 @@ Secrets
 - The deploy configuration (agent.json) expects two vaults: "chatbot" (chat/Slack/Discord secrets) and "arcadedb" (ArcadeDB credentials). In production the container entrypoint runs:
   kadi secret receive --vault chatbot --vault arcadedb && kadi run start
 - You may also provide these via environment variables for local development.
+
+ArcadeDB configuration
+- The agent includes optional ArcadeDB configuration in config.toml under [arcadedb]:
+  - HOST — ArcadeDB host (e.g. arcadedb.dadavidtseng.com)
+  - PORT — ArcadeDB port (e.g. 443)
+  - USERNAME — DB username
+  - DATABASE — DB name
+- Deploy/containers may supply ARCADE_HOST and ARCADE_PORT environment variables (see agent.json deploy).
 
 Logging and identity
 - logging.LEVEL in config.toml controls log level (e.g. debug, info). The agent sets its tag from agent.ID in config.toml.
@@ -154,98 +155,4 @@ Typical runtime flow:
 3. KadiClient connects to the broker(s) and joins networks specified.
 4. Enabled platform clients are initialized (Discord and/or Slack).
 5. Platform-specific listeners attach to platform SDKs and publish inbound events to Kādi networks.
-6. Platform-specific tools are registered with the broker so remote callers can invoke outbound actions. Calls go through KadiClient → tool handlers → platform client SDK.
-
-Development
-===========
-Scripts defined in agent.json:
-
-- npm run preflight
-  - Verifies node_modules is installed before actions that require dependencies.
-- npm run setup
-  - npx tsc (compile TypeScript)
-- npm run start
-  - node dist/index.js (run compiled agent)
-- npm run dev
-  - tsx watch src/index.ts (TypeScript runtime with watch)
-- npm run build
-  - tsc (compile TypeScript)
-- npm run type-check
-  - tsc --noEmit
-- npm run lint
-  - eslint src --ext .ts
-- npm run test
-  - vitest
-
-Recommended local development workflow:
-1. Install deps:
-   ```bash
-   npm install
-   ```
-2. Start in dev/watch mode:
-   ```bash
-   npm run dev
-   ```
-3. To build for production:
-   ```bash
-   npm run build
-   npm run start
-   ```
-
-Container / CI build
-- The build configuration in agent.json (build.default) targets node:20-alpine and runs:
-  - npm ci --include=dev
-  - kadi install kadi-secret
-  - kadi install
-  - npx tsc
-  - npm prune --omit=dev
-- The built image sets NODE_ENV=production.
-- In production/deploy, the container entrypoint uses kadi secret receive to fetch required vaults (chatbot and arcadedb) before starting the agent (see agent.json deploy.command). The deploy configuration also supplies ARCADE_HOST and ARCADE_PORT environment variables for ArcadeDB access.
-
-Troubleshooting
-===============
-- "Dependencies not installed. Run: npm install" — run npm install then re-run preflight or the script you were using.
-- Configuration validation errors — check config.toml and ensure required secrets are present in your vault or environment (DISCORD_TOKEN, SLACK_BOT_TOKEN, SLACK_SIGNING_SECRET, ARCADE_USERNAME, ARCADE_PASSWORD).
-- Broker connection issues — verify broker URLs in config.toml or KADI_BROKER_URL_LOCAL / KADI_BROKER_URL_REMOTE env vars, and that the Kādi broker is reachable.
-- Slack not enabled — ensure bot enabled flag in config.toml (bot.slack.ENABLED) or SLACK_ENABLED env is true and that SLACK_BOT_TOKEN is provided (Slack workspace bot tokens typically start with xoxb-).
-
-Contact / Further Work
-======================
-- See source files under src/ and ./platforms for platform-specific behavior and to extend toolsets or event handling.
-- For changes to tool contracts, update the corresponding register*Tools file and document new tool names and inputs in the Tools section above.
-
-## Quick Start
-
-```bash
-cd agent-chatbot
-npm install
-kadi install
-kadi run start
-```
-
-## agent.json (high-level)
-
-| Field | Value |
-|-------|-------|
-| **Version** | 0.1.7 |
-| **Type** | agent |
-| **Entrypoint** | dist/index.js |
-
-### Abilities
-
-- secret-ability (provided)
-- ability-log ^0.1.5
-
-### Brokers
-
-- remote: wss://broker.dadavidtseng.com/kadi
-
-## Development
-
-```bash
-npm install
-npm run build
-kadi run start
-```
-
----
+6. Platform-specific tools are registered with the broker so remote callers can invoke outbound actions. Calls go
