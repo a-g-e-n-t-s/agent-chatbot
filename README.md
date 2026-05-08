@@ -26,10 +26,10 @@ npm run build
 kadi install
 ```
 
-4. Configure the agent. The agent reads configuration from config.toml (see Configuration). Secrets should be provided via Kadi secrets vaults (recommended) or environment variables. Example minimal config.toml (see config.toml in repo for full example):
+4. Configure the agent. The agent reads configuration from config.toml (see repo config.toml). Secrets should be provided via Kadi secrets vaults (recommended) or environment variables. Example minimal config.toml (see config.toml in repo for full example):
 ```toml
 [broker.remote]
-URL = "wss://broker.dadavidtseng.com/kadi"
+URL = "wss://broker.kadi.build/kadi"
 NETWORKS = ["chatbot"]
 
 [bot.discord]
@@ -60,9 +60,9 @@ kadi run start
 ```bash
 npm run start   # runs node dist/index.js (requires dist/index.js to exist)
 ```
-- For active local development with TypeScript watcher (requires tsx):
+- For active local development with TypeScript watcher:
 ```bash
-npm run dev
+npm run dev   # uses tsx watch src/index.ts
 ```
 
 Tools
@@ -114,6 +114,11 @@ Secrets
   kadi secret receive --vault chatbot --vault arcadedb && kadi run start
 - You may also provide these via environment variables for local development.
 
+Deploy notes
+------------
+- agent.json contains an akash deploy configuration (image: agent-chatbot:0.1.7) that runs the secret fetch command above and then starts the agent.
+- The akash service exposes port 3000 and sets ARCADE_HOST and ARCADE_PORT environment variables for the container (see agent.json deploy section).
+
 ArcadeDB configuration
 - The agent includes optional ArcadeDB configuration in config.toml under [arcadedb]:
   - HOST — ArcadeDB host (e.g. arcadedb.dadavidtseng.com)
@@ -126,7 +131,7 @@ Logging and identity
 - logging.LEVEL in config.toml controls log level (e.g. debug, info). The agent sets its tag from agent.ID in config.toml.
 
 Files of interest:
-- agent.json — agent metadata, scripts (preflight/setup/start/dev/build), build config, deploy and secrets config (includes deploy command that fetches chatbot + arcadedb vaults). Entrypoint: dist/index.js.
+- agent.json — agent metadata, scripts (preflight/setup/start/dev/build/type-check/lint/test), build config, deploy and secrets config (includes deploy command that fetches chatbot + arcadedb vaults). Entrypoint: dist/index.js.
 - config.toml — primary agent configuration (broker, bots, logging, secrets/vaults, arcadedb)
 - src/index.ts — main agent bootstrap and configuration (broker resolution, platform enablement)
 - ./platforms/discord/client.js — Discord platform client implementation
@@ -169,5 +174,7 @@ Typical runtime flow:
 4. Enabled platform clients are initialized (Discord and/or Slack).
 5. Platform-specific listeners attach to platform SDKs and publish inbound events to Kādi networks.
 6. Platform-specific tools are registered with the broker so remote callers can invoke outbound actions. Calls go
+
+---
 
 ---
