@@ -11,7 +11,7 @@ VERSION = "0.1.0"
 #NETWORKS = ["chatbot"]
 
 [broker.remote]
-URL = "wss://broker.dadavidtseng.com/kadi"
+URL = "wss://broker.kadi.build/kadi"
 NETWORKS = ["chatbot"]
 
 [bot.discord]
